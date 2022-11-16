@@ -1,9 +1,10 @@
-#define _caracteresX 32
+#define _caracteresX 20
 #include <LiquidCrystal_I2C.h>
 #include <PS2Keyboard.h>
 
 LiquidCrystal_I2C lcd(0x27,16,2);
 PS2Keyboard keyboard;
+
 
 byte _enie[8]={
   0b01110,
@@ -11,17 +12,6 @@ byte _enie[8]={
   0b10110,
   0b11001,
   0b10001,
-  0b10001,
-  0b10001,
-  0b00000,
-};
-
-byte _enieMayus[8]={
-  0b11111,
-  0b00000,
-  0b11001,
-  0b10101,
-  0b10011,
   0b10001,
   0b10001,
   0b00000,
@@ -101,14 +91,14 @@ const PROGMEM PS2Keymap_t PS2Keymap_Spanish = {
     // with shift
     {0, PS2_F9, 0, PS2_F5, PS2_F3, '=', PS2_F2, PS2_F12,
      0, PS2_F10, PS2_F8, PS2_F6, PS2_F4, PS2_TAB, 0, 0,
-     0, 0 /*Lalt*/, 0 /*Lshift*/, 0, 0 /*Lctrl*/, 'Q', '!', 0,
-     0, 0, 'Z', 'S', 'A', 'W', '\"', 0,
-     0, 'C', 'X', 'D', 'E', 0, 0, 0,
-     0, ' ', 'V', 'F', 'T', 'R', 0, 0,
-     0, 'N', 'B', 'H', 'G', 'Y', '&', 0,
-     0, 0, 'M', 'J', 'U', 0, '(', 0,
-     0, ';', 'K', 'I', 'O', '-', ')', 0,
-     0, ':', '-', 'L', '~' /*Ñ*/, 'P', '?', 0,
+     0, 0 /*Lalt*/, 0 /*Lshift*/, 0, 0 /*Lctrl*/, 'q', '!', 0,
+     0, 0, 'z', 's', 'a', 'w', '\"', 0,
+     0, 'c', 'x', 'd', 'e', 0, 0, 0,
+     0, ' ', 'v', 'f', 't', 'r', 0, 0,
+     0, 'n', 'b', 'h', 'g', 'y', '&', 0,
+     0, 0, 'm', 'j', 'u', 0, '(', 0,
+     0, ';', 'k', 'i', 'o', '-', ')', 0,
+     0, ':', '-', 'l', '|'/*ñ*/, 'p', '?', 0,
      0, 0, '(', 0, '(', 0, 0, 0,
      0 /*CapsLock*/, 0 /*Rshift*/, PS2_ENTER /*Enter*/, ')', 0, ')', 0, 0,
      0, 0, 0, 0, 0, 0, PS2_BACKSPACE, 0,
@@ -137,8 +127,6 @@ const PROGMEM PS2Keymap_t PS2Keymap_Spanish = {
      0, 0, 0, PS2_F7 }
 };
 
-const int DataPin = 4;
-const int IRQpin =  2;
 
 int testIndex = 0;
 bool testingChars = false;
@@ -214,16 +202,35 @@ void imprimirLinea();
 void probarLetra(int index);
 void creditos();
 
+#define IRQpin  2
+#define stpX 11
+#define DataPin 4
+#define dirX 12
+#define stpZ 9
+#define dirZ 10
+#define punz 8
+
 void setup() { 
   keyboard.begin(DataPin, IRQpin, PS2Keymap_Spanish);
-  Serial.begin(9600);
-  Serial.println("Arrancando!");
+  //Serial.begin(9600);
   lcd.init();  
   lcd.backlight();
   inicializarTexto();
   lcd.createChar(1,_enie);
-  lcd.createChar(2,_enieMayus);
   lcd.noBlink();
+  pinMode(stpX, OUTPUT);
+  pinMode(dirX, OUTPUT);
+  pinMode(stpZ, OUTPUT);
+  pinMode(dirZ, OUTPUT);
+  pinMode(punz, OUTPUT);
+  
+  //while (true){
+    //moverse(true, 100);
+    //moverse(false, 100);
+    //moverse(true, -100);
+   // moverse(false, -100);
+  //}
+  
 }
 
 void loop() {
@@ -250,40 +257,38 @@ void loop() {
     
     // check for some of the special keys
     if (c == PS2_ENTER) { // Imprimir línea
-      Serial.println();
+      //Serial.println();
       imprimirLinea();
     } else if(c == PS2_TAB){
       probarLetra();
       testIndex++;
     } else if (c == PS2_ESC) {
-      Serial.print("[ESC]");
+      //Serial.print("[ESC]");
     } else if (c == PS2_PAGEDOWN) {
-      Serial.print("[PgDn]");
+      //Serial.print("[PgDn]");
     } else if (c == PS2_PAGEUP) {
-      Serial.print("[PgUp]");
+      //Serial.print("[PgUp]");
     } else if (c == PS2_LEFTARROW) {
-      Serial.print("[Left]");
+      //Serial.print("[Left]");
     } else if (c == PS2_RIGHTARROW) {
-      Serial.print("[Right]");
+      //Serial.print("[Right]");
     } else if (c == PS2_UPARROW) {
-      Serial.print("[Up]");
+      //Serial.print("[Up]");
     } else if (c == PS2_DOWNARROW) {
-      Serial.print("[Down]");
+      //Serial.print("[Down]");
     } else if (c == PS2_DELETE) {
-      Serial.print("[Del]");
+      //Serial.print("[Del]");
       borrarLetra();
-    } else if (c == '='){
-      creditos();  
     }else {
       if (testingChars){
         inicializarTexto();  
       }
-      Serial.print(c);
+      //Serial.print(c);
       agregarLetra(c);
     }
   }
 }
-                                                                                                                                                                         void creditos(){tecladoActivo(false);lcd.clear();lcd.setCursor(0,0);lcd.print("Proyecto 2022");lcd.setCursor(0,1);lcd.print("Electronica.");delay(2000);lcd.clear();lcd.print("Integrantes:");delay(2000);lcd.clear();lcd.print("Emiliano");lcd.setCursor(0,1);lcd.print("Steppuhn");delay(2000);lcd.clear();lcd.print("Joaquin"); lcd.setCursor(0,1);lcd.print("Los");delay(2000);lcd.clear();lcd.print("Angel"); lcd.setCursor(0,1);lcd.print("Reyes");delay(2000);lcd.clear();lcd.print("Lucas");lcd.setCursor(0,1);lcd.print("Scocier");delay(2000);lcd.clear();tecladoActivo(true);}
+
 void tecladoActivo(bool activo){
   // poner en alto el pin de reloj;  
 }
@@ -359,7 +364,6 @@ void inicializarTexto() {
   testIndex = 0;
   lcd.clear();
   lcd.createChar(1,_enie);
-  lcd.createChar(2,_enieMayus);  
   for (int i = 0; i < _caracteresX; i++){
     texto[i].letra = '\0';  
     texto[i].puntos = 255;
@@ -401,20 +405,87 @@ void probarLetra(){
       }
    } 
 }
+#define xCorto 13
+#define xLargo 17
+#define zCorto 200
+#define zLargo 300
+
+#define minTime 1100
+#define maxTime 1500
+
+int ubicacion = 0;
+
+void moverse(bool motorX, int pasos){
+  int stp = motorX ? stpX : stpZ;
+  int dir = motorX ? dirX : dirZ;
+  bool suma = true;
+
+
+  if (pasos < 0){
+    pasos *= -1;
+    suma = false;
+    digitalWrite(dir, LOW);
+  }else{
+    digitalWrite(dir, HIGH);
+  }
+
+  for (int i = 0; i < pasos; i++){
+    //int delay = 4*(maxTime - minTime)/(float)(pasos * pasos) * (i - (pasos/2)) * (i - (pasos/2)) + minTime;
+
+    digitalWrite(stp, HIGH);
+    delay(1);//delayMicroseconds(delay);
+    digitalWrite(stp, LOW);
+    delay(1);//delayMicroseconds(delay);
+
+    if (motorX) {
+      if (suma)
+        ubicacion++;
+      else
+        ubicacion--;
+    }
+  } 
+
+}
 
 void imprimirLinea(){
   lcd.clear();
   dibujarEscudo();
-  lcd.print("IMPRIMIENDO...");
-  delay(1000);
-  lcd.clear();
+  //lcd.print("IMPRIMIENDO...");
   tecladoActivo(false);
-  
-	// PROCESO DE IMPRESION
+  // Imprimir "IMPRIMIENDO..." en el lcd.
+  for(int regla = 0; regla < 3; regla++){
+    bool linea[_caracteresX * 2];
+    for (int i = 0; i < _caracteresX; i++){
+      if (texto[i].puntos != 255){
+        linea[i*2+0] = texto[i].puntos & (1 << (regla*2));
+        linea[i*2+1] = texto[i].puntos & (2 << (regla*2));
+      }else
+        linea[i*2+0] = false;
+        linea[i*2+1] = false;
+      } 
+    int distancia = 0;
+    for(int i = _caracteresX*2-1; i>= 0; i--){
+        if (i & 1) // impar
+          distancia += xCorto;
+        else
+          distancia += xLargo;
 
-
+        if (linea[i] == true){
+          moverse(true, distancia);
+          delay(500);
+          digitalWrite(punz, HIGH);
+          delay(500);
+          digitalWrite(punz, LOW);
+          delay(500);
+          distancia = 0;
+        }
+    }
+    moverse(true, -ubicacion);
+    moverse(false, zCorto);
   }
-  // Mover espacio grande (Y)
+  moverse(false, zLargo);
+
+  lcd.clear();
   inicializarTexto();
   tecladoActivo(true);
 }
