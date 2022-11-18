@@ -273,9 +273,9 @@ void loop() {
     } else if (c == PS2_RIGHTARROW) {
       //Serial.print("[Right]");
     } else if (c == PS2_UPARROW) {
-      //Serial.print("[Up]");
+      moverse(false, -280);
     } else if (c == PS2_DOWNARROW) {
-      //Serial.print("[Down]");
+      moverse(false, 280);
     } else if (c == PS2_DELETE) {
       //Serial.print("[Del]");
       borrarLetra();
@@ -405,10 +405,13 @@ void probarLetra(){
       }
    } 
 }
-#define xCorto 13
-#define xLargo 17
-#define zCorto 200
-#define zLargo 300
+#define xCorto 13 //7 //4 //13
+#define xLargo 17 //23 //26 //17
+#define zCorto 35 //70
+// 200 pasos equivalen a 18mm (AVANCE HOJA)
+// 50 pasos equivalen a 10mm (CARRO)
+
+#define zLargo 200
 
 #define minTime 1100
 #define maxTime 1500
@@ -450,33 +453,43 @@ void moverse(bool motorX, int pasos){
 void imprimirLinea(){
   lcd.clear();
   dibujarEscudo();
-  //lcd.print("IMPRIMIENDO...");
+  lcd.print("IMPRIMIENDO");
   tecladoActivo(false);
   // Imprimir "IMPRIMIENDO..." en el lcd.
   for(int regla = 0; regla < 3; regla++){
+    lcd.print(".");
     bool linea[_caracteresX * 2];
     for (int i = 0; i < _caracteresX; i++){
       if (texto[i].puntos != 255){
-        linea[i*2+0] = texto[i].puntos & (1 << (regla*2));
-        linea[i*2+1] = texto[i].puntos & (2 << (regla*2));
-      }else
+        linea[i*2+0] = texto[i].puntos & (1 << (regla*2+0));
+        linea[i*2+1] = texto[i].puntos & (1 << (regla*2+1)); //linea[i*2+1] = texto[i].puntos & (2 << (regla*2));
+      }else{
         linea[i*2+0] = false;
         linea[i*2+1] = false;
-      } 
+      }
+    } 
+    
     int distancia = 0;
-    for(int i = _caracteresX*2-1; i>= 0; i--){
-        if (i & 1) // impar
+    //for(int i = _caracteresX*2-1; i >= 0; i--){
+    for (int i = 0; i < _caracteresX*2; i++){
+        if (i & 0) // impar
           distancia += xCorto;
         else
           distancia += xLargo;
 
         if (linea[i] == true){
           moverse(true, distancia);
-          delay(500);
+          delay(300);
           digitalWrite(punz, HIGH);
-          delay(500);
+          delay(350);
+          digitalWrite(punz, LOW);
+          delay(350);
+          
+          digitalWrite(punz, HIGH);
+          delay(350);
           digitalWrite(punz, LOW);
           delay(500);
+          
           distancia = 0;
         }
     }
